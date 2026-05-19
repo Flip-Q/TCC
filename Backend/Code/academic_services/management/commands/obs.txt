@@ -1,0 +1,4 @@
+o iniciar_scheduler.py eh pra se formos usar o Docker + APScheduler pra rodar em segundo plano no docker o envio automatico
+
+o rotina_diaria.py seria caso formos usar o Python Anywhere pra rodar o envio automatico --> o rotina_diaria.py eh uma chamara pros commands q formos implementar
+                                                                                            pq o Python Anywhere tem o limite de 1 command na conta gratuita

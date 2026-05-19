@@ -1,0 +1,118 @@
+<div class="container mt-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">Agendamento de Postagens</h2>
+    
+    <div>
+      <button class="btn btn-primary me-2" (click)="exibirModal.set(true)">
+        <i class="bi bi-plus-circle"></i> Novo Agendamento
+      </button>
+      <button class="btn btn-outline-secondary" (click)="voltar()">
+        <i class="bi bi-arrow-left"></i> Voltar
+      </button>
+    </div>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <table class="table table-hover">
+        <thead class="table-light">
+          <tr>
+            <th>Matéria</th>
+            <th>Assunto</th>
+            <th>Data Prevista</th>
+            <th>Status</th>
+            <th class="text-center">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (tarefa of tarefasAgendadas(); track tarefa.id) {
+            <tr>
+              <td>{{ tarefa.materia }}</td>
+              <td>{{ tarefa.assunto }}</td>
+              <td>{{ tarefa.data_prevista | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td>
+                <span class="badge" [ngClass]="tarefa.status === 'Postado' ? 'bg-success' : 'bg-warning text-dark'">
+                  {{ tarefa.status }}
+                </span>
+              </td>
+              <td class="text-center">
+                @if (tarefa.status !== 'Postado') {
+                  <button class="btn btn-success btn-sm" (click)="enviarAgora(tarefa.id)">
+                    <i class="bi bi-send-fill"></i> Postar Agora
+                  </button>
+                } @else {
+                  <span class="text-muted small">Concluído</span>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="text-center text-muted py-4">
+                Nenhuma tarefa agendada encontrada no banco de dados.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  @if (exibirModal()) {
+    <div class="modal fade show d-block" style="background: rgba(0,0,0,0.5);">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+          
+          <div class="modal-header">
+            <h5 class="modal-title fw-bold">Criar Postagem Programada</h5>
+            <button type="button" class="btn-close" (click)="exibirModal.set(false)"></button>
+          </div>
+          
+          <div class="modal-body">
+            
+            <div class="mb-3">
+              <label class="form-label fw-bold">Código da Turma</label>
+              <input type="text" class="form-control" [(ngModel)]="turmaCodigo" placeholder="Ex: TURMA-01">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-bold">Assunto / Título da Aula</label>
+              <input type="text" class="form-control" [(ngModel)]="assunto" placeholder="Ex: Aula 01 - Introdução">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-bold">Data e Hora da Postagem</label>
+              <input type="datetime-local" class="form-control" [(ngModel)]="dataPrevista">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label d-block fw-bold">Materiais de Apoio</label>
+              <button type="button" class="btn btn-outline-success btn-sm mb-2" (click)="abrirSeletorDrive()">
+                <i class="bi bi-google-drive me-1"></i> Importar do Google Drive
+              </button>
+
+              <ul class="list-group mt-2">
+                @for (arq of listaArquivos(); track arq.url; let i = $index) {
+                  <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-file-earmark-pdf text-danger me-2"></i>{{ arq.nome }}</span>
+                    <button class="btn btn-sm text-danger" (click)="removerArquivo(i)">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </li>
+                } @empty {
+                  <li class="list-group-item text-muted text-center py-3">Nenhum arquivo anexado ainda.</li>
+                }
+              </ul>
+            </div>
+
+          </div>
+          
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="exibirModal.set(false)">Cancelar</button>
+            <button type="button" class="btn btn-primary" (click)="salvarNovoAgendamento()">Salvar Agendamento</button>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  }
+</div>

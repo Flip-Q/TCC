@@ -1,0 +1,42 @@
+services:
+  db:
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=db
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+
+  backend:
+    build: ./Backend/Code
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./Backend/Code:/code
+      - .:/app
+    ports:
+      - "8000:8000"
+      - "8090:8090"
+    environment:
+      - POSTGRES_NAME=db
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+    depends_on:
+      - db
+
+  frontend:
+    build: ./Frontend/Code
+    volumes:
+      - ./Frontend/Code:/app
+      - /app/node_modules
+    ports:
+      - "4200:4200"
+    environment:
+      - NG_CLI_ANALYTICS=false
+    stdin_open: true
+    tty: true
+
+volumes:
+  postgres_data:

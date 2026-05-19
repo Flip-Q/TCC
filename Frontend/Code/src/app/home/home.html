@@ -1,0 +1,57 @@
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="#">
+      <i class="bi bi-mortarboard-fill me-2"></i>Portal Prevest
+    </a>
+    <div class="navbar-nav ms-auto">
+      <button class="btn btn-light btn-sm fw-bold" (click)="logout()">
+        Sair <i class="bi bi-box-arrow-right ms-1"></i>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- Conteúdo Principal -->
+<div class="container mt-5">
+  <div class="row">
+    <div class="col-12 mb-4">
+      <h2 class="fw-bold">
+        @if (nomeUsuario()) {
+          Bem-vindo, {{ nomeUsuario() }}!
+        } @else {
+          Bem-vindo!
+        }
+      </h2>
+      <p class="text-muted">O que você deseja gerenciar hoje?</p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Card de Agendamento -->
+    <div class="col-md-4">
+      <div class="card h-100 shadow-sm border-0 transition-card" (click)="irParaAgendamento()" style="cursor: pointer;">
+        <div class="card-body text-center p-4">
+          <div class="icon-circle bg-primary text-white mb-3 mx-auto">
+            <i class="bi bi-calendar-event h3"></i>
+          </div>
+          <h5 class="card-title fw-bold">Agendamentos</h5>
+          <p class="card-text text-muted">Visualize e dispare as postagens automáticas para o Google Classroom.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card de Alunos (Exemplo de futura expansão) -->
+    <div class="col-md-4">
+      <div class="card h-100 shadow-sm border-0 opacity-75">
+        <div class="card-body text-center p-4">
+          <div class="icon-circle bg-secondary text-white mb-3 mx-auto">
+            <i class="bi bi-people h3"></i>
+          </div>
+          <h5 class="card-title fw-bold">Alunos</h5>
+          <p class="card-text text-muted">Gestão de presença e participação (Em breve).</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
