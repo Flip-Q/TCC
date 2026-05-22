@@ -1,6 +1,7 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Data } from '../services/data';
+import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-home',
@@ -35,7 +36,8 @@ export class Home implements OnInit {
 
     const form = document.createElement('form');
     form.method = 'POST';
-    form.action = 'http://localhost:8000/auth/logout/';
+    //form.action = 'http://localhost:8000/auth/logout/';
+    form.action = `${environment.apiUrl}/auth/logout/`;
 
     document.body.appendChild(form);
     form.submit();

@@ -1,13 +1,15 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class Data {
   private http = inject(HttpClient);
-  private readonly API_URL = 'http://localhost:8000/api'; // mudar pra URL oficial quando subir 
+  //private readonly API_URL = 'http://localhost:8000/api'; 
+  private readonly API_URL = `${environment.apiUrl}/api`;
 
   getPerfilProfessor(): Observable<any> {
     return this.http.get(`${this.API_URL}/perfil/`);

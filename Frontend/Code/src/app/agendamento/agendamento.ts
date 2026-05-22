@@ -26,7 +26,7 @@ export class Agendamento implements OnInit {
   protected assunto = '';
   protected dataPrevista = '';
   protected turmaCodigo = '';
-
+  protected codigoDisciplina = '';
   private googleToken = '';
   private googleClientId = '';
   private googleApiKey = '';
@@ -144,6 +144,7 @@ export class Agendamento implements OnInit {
   salvarNovoAgendamento() {
     const payload = {
       turma_codigo: this.turmaCodigo,
+      disciplina_codigo: this.codigoDisciplina,
       assunto: this.assunto,
       data_prevista: this.dataPrevista,
       arquivos: this.listaArquivos()

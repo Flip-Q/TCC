@@ -8,13 +8,31 @@ from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout as django_logout
 from django.views.decorators.csrf import csrf_exempt
+from django.core.management import call_command
 
-from .models import AgendamentoPostagem, CronogramaItem, ConteudoDisciplina, Turma, ConteudoCategoria
+from .models import (
+    AgendamentoPostagem, CronogramaItem, ConteudoDisciplina,
+    Turma, ConteudoCategoria, Disciplina, Cronograma, TemplateCronogramaItem
+)
 from .services.classroom_services import postar_material_aula
 
 from social_django.models import UserSocialAuth
 from google.oauth2.credentials import Credentials
 
+
+
+def gatilho_rotina_diaria(request):
+    token_enviado = request.GET.get('token')
+    token_esperado = os.getenv('CRON_SECRET_KEY')
+    
+    if not token_esperado or token_enviado != token_esperado:
+        return JsonResponse({'erro': 'Acesso negado. Token invalido.'}, status=403)
+    
+    try:
+        call_command('rotina_diaria')
+        return JsonResponse({'sucesso': True, 'mensagem': 'Rotina diaria concluida com sucesso.' })
+    except Exception as e:
+        return JsonResponse({'sucesso': False, 'erro': str(e)}, status=500)
 
 
 @login_required
@@ -38,8 +56,61 @@ def criar_agendamento(request):
         data = json.loads(request.body)
         
         turma_codigo = data.get('turma_codigo')
-        turma = Turma.objects.get(codigo=turma_codigo)
+        disciplina_codigo = data.get('disciplina_codigo')
         
+        turma = Turma.objects.get(codigo=turma_codigo)
+        disciplina = Disciplina.objects.get(codigo=disciplina_codigo)
+        
+        cronograma_base = turma.cronogramas.filter(
+            turma=turma,
+            template__disciplina=disciplina
+        ).first()
+        
+        if not cronograma_base:
+            return JsonResponse({'error': f'Cronograma de {disciplina.nome} não encontrado para a turma {turma.codigo}.'}, status=400)
+        
+        novo_template_item = TemplateCronogramaItem.objects.create(
+            template = cronograma_base.template,
+            titulo_aula = data.get('assunto')
+        )
+        
+        data_prevista_completa = data.get('data_prevista')
+        data_prevista_dia = data_prevista_completa.split('T')[0]
+        
+        novo_cronograma_item = CronogramaItem.objects.create(
+            cronograma = cronograma_base,
+            template_item = novo_template_item,
+            data_prevista_evento = data_prevista_dia
+        )
+        
+        agendamento = AgendamentoPostagem.objects.create(
+            cronograma_item=novo_cronograma_item,
+            data_da_postagem=data_prevista_completa,
+            aprovacao_automatica=True
+        )
+        
+        categoria_padrao, _ = ConteudoCategoria.objects.get_or_create(nome='Material de Aula')
+        arquivos = data.get('arquivos', [])
+        
+        for arquivo in arquivos:
+            novo_conteudo = ConteudoDisciplina.objects.create(
+                categoria=categoria_padrao,
+                disciplina=disciplina,
+                nome_no_drive=arquivo.get('nome'),
+                link_no_drive=arquivo.get('url'),
+            )
+            novo_cronograma_item.conteudos.add(novo_conteudo)   
+        return JsonResponse({'status': 'Sucesso', 'agendamento_id': agendamento.id})
+
+    except Turma.DoesNotExist:
+        return JsonResponse({'error': 'Turma não encontrada.'}, status=404)
+    except Disciplina.DoesNotExist:
+        return JsonResponse({'error': 'Disciplina não encontrada.'}, status=404)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({'error': str(e)}, status=500)
+    """
         cronograma_item = CronogramaItem.objects.filter(cronograma__turma=turma).first()
         
         if not cronograma_item:
@@ -69,6 +140,8 @@ def criar_agendamento(request):
         import traceback
         traceback.print_exc()
         return JsonResponse({'error': str(e)}, status=500)
+        
+    """
 
 @csrf_exempt
 def logout_view(request):

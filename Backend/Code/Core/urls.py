@@ -31,4 +31,5 @@ urlpatterns = [
     path('api/disparar/<int:tarefa_id>/', views.enviar_agora, name='enviar_agora'),
     path('api/google-token/', views.get_google_token, name='google_token'),
     path('api/agendamentos/criar/', views.criar_agendamento, name='criar_agendamento'),
+    path('api/gatilho-rotina/', views.gatilho_rotina_diaria, name='gatilho_rotina'),    
 ]

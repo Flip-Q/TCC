@@ -16,8 +16,10 @@ from dotenv import load_dotenv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-env_path = '/app/.env'
+env_path = BASE_DIR / '.env'
 load_dotenv(dotenv_path=env_path)
+
+AMBIENTE_NUVEM = not bool(os.environ.get('POSTGRES_NAME'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -32,6 +34,7 @@ ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
     ".github.dev",
+    "SistPrevest.pythonanywhere.com",
 ]
 
 
@@ -87,17 +90,24 @@ WSGI_APPLICATION = 'Core.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'db',
-        'USER': 'user',
-        'PASSWORD': 'password',
-        'HOST': 'db',
-        'PORT': '5432',
+if os.getenv('POSTGRES_NAME'):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('POSTGRES_NAME'),
+            'USER': os.getenv('POSTGRES_USER'),
+            'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
+            'HOST': os.getenv('POSTGRES_HOST'),
+            'PORT': os.getenv('POSTGRES_PORT'),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -169,9 +179,6 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_AUTH_EXTRA_ARGUMENTS = {
     'prompt': 'select_account' 
 }
 
-LOGIN_URL = 'auth/login/google-oauth2/'
-LOGIN_ERROR_URL = 'http://localhost:4200/login'
-LOGIN_REDIRECT_URL = 'http://localhost:4200/home'
 
 
 SESSION_COOKIE_SAMESITE = 'Lax'
@@ -181,15 +188,34 @@ SOCIAL_AUTH_REDIRECT_IS_HTTPS = False
 
 CORS_ALLOW_CREDENTIALS = True
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:4200",
-    'http://127.0.0.1:4200',
-]
-#quando estiver em producao, altere pra True (HTTPS)
-SESSION_COOKIE_SECURE = False
-CSRF_COOKIE_SECURE = False
-SOCIAL_AUTH_GOOGLE_OAUTH2_USE_UNIQUE_STATE = False
 
+LOGIN_URL = 'auth/login/google-oauth2/'
 
+if AMBIENTE_NUVEM:
+    # Ambiente de produção
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SOCIAL_AUTH_GOOGLE_OAUTH2_USE_UNIQUE_STATE = True
+    
+    URL_PRODUCAO_ANGULAR = 'https://sistprevest.vercel.app'
+    
+    LOGIN_ERROR_URL = f'{URL_PRODUCAO_ANGULAR}/login'     #mudar pro link do vercel depois
+    LOGIN_REDIRECT_URL = f'{URL_PRODUCAO_ANGULAR}/home'   #mudar pro link do vercel depois
+    
+    CORS_ALLOWED_ORIGINS = [
+        URL_PRODUCAO_ANGULAR,
+    ]
+else:
+    # Ambiente de desenvolvimento 
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+    SOCIAL_AUTH_GOOGLE_OAUTH2_USE_UNIQUE_STATE = False
+    LOGIN_ERROR_URL = 'http://localhost:4200/login'
+    LOGIN_REDIRECT_URL = 'http://localhost:4200/home'
+
+    CORS_ALLOWED_ORIGINS = [
+        "http://localhost:4200",
+        'http://127.0.0.1:4200',
+    ]
 
 
