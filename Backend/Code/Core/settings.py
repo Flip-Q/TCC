@@ -34,7 +34,7 @@ ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
     ".github.dev",
-    "SistPrevest.pythonanywhere.com",
+    "sistprevest.pythonanywhere.com",
 ]
 
 
