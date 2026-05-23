@@ -199,7 +199,7 @@ if AMBIENTE_NUVEM:
     CSRF_COOKIE_SECURE = True
     SOCIAL_AUTH_GOOGLE_OAUTH2_USE_UNIQUE_STATE = True
     
-    URL_PRODUCAO_ANGULAR = 'https://sistprevest.vercel.app'
+    URL_PRODUCAO_ANGULAR = 'https://tcc-delta-lime.vercel.app'
     
     LOGIN_ERROR_URL = f'{URL_PRODUCAO_ANGULAR}/login'     #mudar pro link do vercel depois
     LOGIN_REDIRECT_URL = f'{URL_PRODUCAO_ANGULAR}/home'   #mudar pro link do vercel depois
