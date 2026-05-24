@@ -12,22 +12,22 @@ export class Data {
   private readonly API_URL = `${environment.apiUrl}/api`;
 
   getPerfilProfessor(): Observable<any> {
-    return this.http.get(`${this.API_URL}/perfil/`);
+    return this.http.get(`${this.API_URL}/perfil/`, { withCredentials: true });
   }
 
   getAgendamentos(): Observable<any> {
-    return this.http.get<any[]>(`${this.API_URL}/agendamentos/`);
+    return this.http.get<any[]>(`${this.API_URL}/agendamentos/`, { withCredentials: true });
   }
 
   dispararPostagens(aulaId: number): Observable<any> {
-    return this.http.post(`${this.API_URL}/disparar/${aulaId}/`, {});
+    return this.http.post(`${this.API_URL}/disparar/${aulaId}/`, {}, { withCredentials: true });
   }
 
   getGoogleToken(): Observable<any> {
-    return this.http.get(`${this.API_URL}/google-token/`);
+    return this.http.get(`${this.API_URL}/google-token/`, { withCredentials: true });
   }
 
   criarAgendamento(data: any): Observable<any> {
-    return this.http.post(`${this.API_URL}/agendamentos/criar/`, data);
+    return this.http.post(`${this.API_URL}/agendamentos/criar/`, data, { withCredentials: true });
   }
 }
