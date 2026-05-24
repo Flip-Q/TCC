@@ -20,7 +20,8 @@ env_path = BASE_DIR / '.env'
 load_dotenv(dotenv_path=env_path)
 
 
-AMBIENTE_NUVEM = not bool(os.environ.get('POSTGRES_NAME'))
+#AMBIENTE_NUVEM = not bool(os.environ.get('POSTGRES_NAME'))
+AMBIENTE_NUVEM = os.getenv('AMBIENTE', 'dev') == 'prod'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -184,17 +185,15 @@ SOCIAL_AUTH_REDIRECT_IS_HTTPS = False
 
 CORS_ALLOW_CREDENTIALS = True
 
-SESSION_COOKIE_SAMESITE = 'None'
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SAMESITE = 'None'
-CSRF_COOKIE_SECURE = True
-
 
 LOGIN_URL = '/auth/login/google-oauth2/'
 
 if AMBIENTE_NUVEM:
     # Ambiente de produção
+
+    SESSION_COOKIE_SAMESITE = 'None'
     SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SAMESITE = 'None'
     CSRF_COOKIE_SECURE = True
     SOCIAL_AUTH_GOOGLE_OAUTH2_USE_UNIQUE_STATE = True
     
@@ -208,9 +207,12 @@ if AMBIENTE_NUVEM:
     ]
 else:
     # Ambiente de desenvolvimento 
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    CSRF_COOKIE_SAMESITE = 'Lax'
     SESSION_COOKIE_SECURE = False
     CSRF_COOKIE_SECURE = False
     SOCIAL_AUTH_GOOGLE_OAUTH2_USE_UNIQUE_STATE = False
+    
     LOGIN_ERROR_URL = 'http://localhost:4200/login'
     LOGIN_REDIRECT_URL = 'http://localhost:4200/home'
 
