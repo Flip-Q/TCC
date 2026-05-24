@@ -153,8 +153,6 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-CORS_ALLOW_ALL_ORIGINS = True
-
 AUTH_USER_MODEL = 'academic_services.UserAuth'
 
 AUTHENTICATION_BACKENDS = (
@@ -182,10 +180,6 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_AUTH_EXTRA_ARGUMENTS = {
 }
 
 
-
-SESSION_COOKIE_SAMESITE = 'Lax'
-CSRF_COOKIE_SAMESITE = 'Lax'
-
 SOCIAL_AUTH_REDIRECT_IS_HTTPS = False
 
 CORS_ALLOW_CREDENTIALS = True
@@ -196,7 +190,7 @@ CSRF_COOKIE_SAMESITE = 'None'
 CSRF_COOKIE_SECURE = True
 
 
-LOGIN_URL = 'auth/login/google-oauth2/'
+LOGIN_URL = '/auth/login/google-oauth2/'
 
 if AMBIENTE_NUVEM:
     # Ambiente de produção
