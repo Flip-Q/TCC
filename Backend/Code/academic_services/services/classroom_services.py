@@ -35,6 +35,10 @@ def postar_material_aula(creds, course_id, titulo, descricao, links_materiais=No
     
     if links_materiais:
         for url_drive in links_materiais:
+            
+            if not isinstance(url_drive, str):
+                continue
+            
             file_id = extrair_id_do_drive(url_drive)
             
             if file_id:
@@ -42,8 +46,9 @@ def postar_material_aula(creds, course_id, titulo, descricao, links_materiais=No
                     'driveFile':{
                         'driveFile':{
                             'id': file_id,
-                        },
-                        'shareMode': 'VIEW'
+                        }
+                        #},
+                        #'shareMode': 'VIEW'
                     }
                 })
             else:
