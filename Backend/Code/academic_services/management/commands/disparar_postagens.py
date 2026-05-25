@@ -1,7 +1,28 @@
+import os
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from academic_services.models import AgendamentoPostagem
 from academic_services.services.classroom_services import postar_material_aula
+from social_django.models import UserSocialAuth
+from google.oauth2.credentials import Credentials
+
+
+def obter_credenciais_admin():
+    admin_email = os.getenv('EMAIL_ADMIN_SISTEMA')
+    
+    try:
+        admin_auth = UserSocialAuth.objects.get(user__email=admin_email, provider='google-oauth2')
+        
+        creds = Credentials(
+            token=admin_auth.extra_data.get('access_token'),
+            refresh_token=admin_auth.extra_data.get('refresh_token'),
+            token_uri='https://oauth2.googleapis.com/token',
+            client_id=os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY'),
+            client_secret=os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET')
+        )
+        return creds
+    except UserSocialAuth.DoesNotExist:
+        raise Exception(f"E-mail Admin configurado ({admin_email}) ainda não fez login no sistema.") 
 
 class Command(BaseCommand):
     help = 'Procura no banco de dados e dispara as postagens agendadas para o Google Classroom'
@@ -10,6 +31,12 @@ class Command(BaseCommand):
         agora = timezone.now()
         
         self.stdout.write(f"[{agora.strftime('%d/%m/%Y %H:%M:%S')}] Procurando postagens agendadas...")
+        
+        try:
+            creds_admin = obter_credenciais_admin()
+        except Exception as e:
+            self.stdout.write(self.style.ERROR(f"Erro de Autenticação: {str(e)}"))
+            return
         
         agendamentos_pendentes = AgendamentoPostagem.objects.filter(
             data_da_postagem__lte = agora,
@@ -41,6 +68,7 @@ class Command(BaseCommand):
             lista_links = [conteudo.link_no_drive for conteudo in conteudos if conteudo.link_no_drive]
             
             resposta = postar_material_aula(
+                creds=creds_admin,
                 course_id=turma.id_classroom,
                 titulo=titulo_post,
                 descricao=descricao_post,
