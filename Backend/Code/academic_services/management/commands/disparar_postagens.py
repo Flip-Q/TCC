@@ -1,4 +1,5 @@
 import os
+import re
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from academic_services.models import AgendamentoPostagem
@@ -65,7 +66,30 @@ class Command(BaseCommand):
             descricao_post = f"Materiais e conteúdos programados para esta aula"
             
             conteudos = cronograma_item.conteudos.all()
-            lista_links = [conteudo.link_no_drive for conteudo in conteudos if conteudo.link_no_drive]
+            #lista_links = [conteudo.link_no_drive for conteudo in conteudos if conteudo.link_no_drive]
+            lista_links = [] 
+            
+            for conteudo in conteudos:
+                if conteudo.link_no_drive:
+                    match = re.search(r'/d/([a-zA-Z0-9_-]+)', conteudo.link_no_drive)
+                    
+                    if match:
+                        file_id = match.group(1)
+                        lista_links.append({
+                            "driveFile": {
+                                "driveFile": {
+                                    "id": file_id
+                                }
+                            }
+                        })
+                    else:
+                        # Se não for do Drive, manda como link normal
+                        lista_links.append({
+                            "link": {
+                                "url": conteudo.link_no_drive
+                            }
+                        })
+            
             
             resposta = postar_material_aula(
                 creds=creds_admin,
