@@ -28,6 +28,7 @@ services:
 
   frontend:
     build: ./Frontend/Code
+    command: npx ng serve --host 0.0.0.0 --configuration=development
     volumes:
       - ./Frontend/Code:/app
       - /app/node_modules

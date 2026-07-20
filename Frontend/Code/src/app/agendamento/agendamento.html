@@ -37,9 +37,20 @@
               </td>
               <td class="text-center">
                 @if (tarefa.status !== 'Postado') {
-                  <button class="btn btn-success btn-sm" (click)="enviarAgora(tarefa.id)">
-                    <i class="bi bi-send-fill"></i> Postar Agora
-                  </button>
+                  <div class="d-flex justify-content-center gap-1">
+                    <button class="btn btn-success btn-sm" (click)="enviarAgora(tarefa.id)">
+                      <i class="bi bi-send-fill"></i> Postar Agora
+                    </button>
+
+                    <button class="btn btn-primary btn-sm" (click)="abrirModalEdicao(tarefa)" title="Editar Agendamento">
+                      <i class="bi bi-pencil-fill"></i>
+                    </button>
+
+                    <button class="btn btn-outline-danger btn-sm" (click)="excluirAgendamento(tarefa.id)" title="Excluir Agendamento">
+                      <i class="bi bi-trash-fill"></i>
+                    </button>
+                  </div>
+                  
                 } @else {
                   <span class="text-muted small">Concluído</span>
                 }
@@ -70,13 +81,27 @@
           <div class="modal-body">
             
             <div class="mb-3">
-              <label class="form-label fw-bold">Código da Turma</label>
-              <input type="text" class="form-control" [(ngModel)]="turmaCodigo" placeholder="Ex: TURMA-01">
-            </div>
-
-            <div class="mb-3">
               <label class="form-label fw-bold">Código da Disciplina</label>
-              <input type="text" class="form-control" [(ngModel)]="codigoDisciplina" placeholder="Ex: MAT-01">
+              <select class="form-select" [(ngModel)]="codigoDisciplina">
+                <option value="" disabled selected>Selecione uma disciplina</option>
+                @for (disciplina of listaDisciplinas(); track disciplina.codigo) {
+                  <option [value]="disciplina.codigo">{{ disciplina.codigo }}</option>
+                } @empty {
+                  <option value="" disabled>Nenhuma disciplina encontrada</option>
+                }
+              </select>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label fw-bold">Código da Turma</label>
+              <select class="form-select" [(ngModel)]="turmaCodigo">
+                <option value="" disabled selected>Selecione uma turma</option>
+                @for (turma of listaTurmas(); track turma.codigo) {
+                  <option [value]="turma.codigo">{{ turma.codigo }}</option>
+                } @empty {
+                  <option value="" disabled>Nenhuma turma encontrada</option>
+                }
+              </select>
             </div>
 
             <div class="mb-3">
@@ -96,7 +121,7 @@
               </button>
 
               <ul class="list-group mt-2">
-                @for (arq of listaArquivos(); track arq.url; let i = $index) {
+                @for (arq of listaArquivos(); track $index; let i = $index) {
                   <li class="list-group-item d-flex justify-content-between align-items-center">
                     <span><i class="bi bi-file-earmark-pdf text-danger me-2"></i>{{ arq.nome }}</span>
                     <button class="btn btn-sm text-danger" (click)="removerArquivo(i)">

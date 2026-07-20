@@ -1,0 +1,161 @@
+<div class="container-fluid mt-2">
+  
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0">Templates de Cronograma</h2>
+    
+    <button class="btn btn-success" (click)="abrirModalNovoTemplate()">
+      <i class="bi bi-plus-lg me-1"></i> Novo Template
+    </button>
+  </div>
+
+  <div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="p-3">Nome do Template</th>
+            <th class="p-3 text-center" style="width: 250px;">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (template of listaTemplates(); track template.id) {
+            <tr>
+              <td class="p-3 align-middle">{{ template.nome }}</td>
+              
+              <td class="p-3">
+                <div class="d-flex justify-content-center align-items-center gap-2">
+                  <button class="btn btn-outline-dark btn-sm" (click)="irParaItens(template.id)" title="Editar Itens do Template">
+                    <i class="bi bi-list-task me-1"></i>
+                  </button>
+                  
+                  <button class="btn btn-primary btn-sm" (click)="abrirModal()" title="Gerar cronograma para uma turma">
+                    <i class="bi bi-calendar-plus me-1"></i>
+                  </button>
+
+                  <button class="btn btn-danger btn-sm" (click)="excluirTemplate(template.id)" title="Excluir Template">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="2" class="p-4 text-center text-muted">
+                Nenhum template encontrado. Clique em "Novo Template" para começar.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-end mt-4">
+    <button class="btn btn-outline-primary px-4 py-2" (click)="irParaCronogramaReal()">
+      Ver Cronogramas das Turmas <i class="bi bi-arrow-right ms-2"></i>
+    </button>
+  </div>
+
+</div>
+
+@if (exibirModal()) {
+  <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg">
+        
+        <div class="modal-header bg-light border-0">
+          <h5 class="modal-title fw-bold">Gerar Novo Cronograma</h5>
+          <button type="button" class="btn-close" (click)="fecharModal()"></button>
+        </div>
+
+        <div class="modal-body p-4">
+          <form>
+            <div class="mb-3">
+              <label class="form-label fw-bold">Disciplina</label>
+              <select class="form-select" [(ngModel)]="disciplinaSelecionada" name="disciplina">
+                <option value="">Selecione a disciplina...</option>
+                @for (disciplina of listaDisciplinas(); track disciplina.codigo) {
+                  <option [value]="disciplina.codigo">{{ disciplina.nome }}</option>
+                }
+              </select>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label fw-bold">Turma</label>
+              <select class="form-select" [(ngModel)]="turmaSelecionada" name="turma">
+                <option value="">Selecione a turma...</option>
+                @for (turma of listaTurmas(); track turma.codigo) {
+                  <option [value]="turma.codigo">{{ turma.nome || turma.codigo }}</option>
+                }
+              </select>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Data de Início</label>
+                <input type="date" class="form-control" [(ngModel)]="dataInicio" name="dataInicio">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-bold">Data de Fim</label>
+                <input type="date" class="form-control" [(ngModel)]="dataFim" name="dataFim">
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div class="modal-footer border-0 bg-light">
+          <button type="button" class="btn btn-secondary" (click)="fecharModal()">Cancelar</button>
+          <button type="button" class="btn btn-primary px-4" 
+                  (click)="gerarCronograma()"
+                  [disabled]="!turmaSelecionada || !disciplinaSelecionada || !dataInicio || !dataFim">
+            Gerar Cronograma
+          </button>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+}
+
+@if (exibirModalNovoTemplate()) {
+  <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg">
+        
+        <div class="modal-header bg-light border-0">
+          <h5 class="modal-title fw-bold">Criar Novo Template</h5>
+          <button type="button" class="btn-close" (click)="fecharModalNovoTemplate()"></button>
+        </div>
+
+        <div class="modal-body p-4">
+          <form>
+            <div class="mb-3">
+              <label class="form-label fw-bold">Disciplina</label>
+              <select class="form-select" [(ngModel)]="novoTemplateDisciplina" name="novaDisciplina">
+                <option value="">Selecione a disciplina...</option>
+                @for (disciplina of listaDisciplinas(); track disciplina.codigo) {
+                  <option [value]="disciplina.codigo">{{ disciplina.nome }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-bold">Título do Template</label>
+              <input type="text" class="form-control" placeholder="Ex: Cronograma semi-intensivo" [(ngModel)]="novoTemplateTitulo" name="novoTitulo">
+            </div>
+          </form>
+        </div>
+
+        <div class="modal-footer border-0 bg-light">
+          <button type="button" class="btn btn-secondary" (click)="fecharModalNovoTemplate()">Cancelar</button>
+          <button type="button" class="btn btn-success px-4" 
+                  (click)="salvarNovoTemplate()"
+                  [disabled]="!novoTemplateDisciplina || !novoTemplateTitulo">
+            Salvar Template
+          </button>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+}

@@ -1,16 +1,3 @@
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
-  <div class="container">
-    <a class="navbar-brand fw-bold" href="#">
-      <i class="bi bi-mortarboard-fill me-2"></i>Portal Prevest
-    </a>
-    <div class="navbar-nav ms-auto">
-      <button class="btn btn-light btn-sm fw-bold" (click)="logout()">
-        Sair <i class="bi bi-box-arrow-right ms-1"></i>
-      </button>
-    </div>
-  </div>
-</nav>
 
 <!-- Conteúdo Principal -->
 <div class="container mt-5">
@@ -41,7 +28,34 @@
       </div>
     </div>
 
-    <!-- Card de Alunos (Exemplo de futura expansão) -->
+
+    <div class="col-md-4">
+      <div class="card h-100 shadow-sm border-0 transition-card" (click)="irParaCronogramas()" style="cursor: pointer;">
+        <div class="card-body text-center p-4">
+          <div class="icon-circle bg-success text-white mb-3 mx-auto" >
+            <i class="bi bi-journal-bookmark-fill h3 mb-0"></i>
+          </div>
+          <h5 class="card-title fw-bold">Cronogramas</h5>
+          <p class="card-text text-muted">Gerencie os templates de aulas e gere cronogramas para as turmas.</p>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="col-md-4">
+      <div class="card h-100 shadow-sm border-0 transition-card" (click)="irParaSubstituicoes()" style="cursor: pointer;">
+        <div class="card-body text-center p-4">
+          <div class="icon-circle bg-warning text-dark mb-3 mx-auto">
+            <i class="bi bi-arrow-left-right h3 mb-0"></i>
+          </div>
+          <h5 class="card-title fw-bold">Substituições</h5>
+          <p class="card-text text-muted">Gerencie os pedidos de troca de aulas e aceite convites de colegas.</p>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Card de Alunos (Exemplo de futura expansão) 
     <div class="col-md-4">
       <div class="card h-100 shadow-sm border-0 opacity-75">
         <div class="card-body text-center p-4">
@@ -53,5 +67,7 @@
         </div>
       </div>
     </div>
+    -->
+
   </div>
 </div>

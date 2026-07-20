@@ -31,15 +31,12 @@ export class Home implements OnInit {
     this.router.navigate(['/agendamento']);
   }
 
-  logout() {
-    //window.location.href = 'http://localhost:8000/auth/logout/';
-
-    const form = document.createElement('form');
-    form.method = 'POST';
-    //form.action = 'http://localhost:8000/auth/logout/';
-    form.action = `${environment.apiUrl}/auth/logout/`;
-
-    document.body.appendChild(form);
-    form.submit();
+  irParaCronogramas(){
+    this.router.navigate(['/cronograma']);
   }
+
+  irParaSubstituicoes() {
+    this.router.navigate(['/substituicoes']);
+  }
+
 }

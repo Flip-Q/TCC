@@ -1,0 +1,182 @@
+<div class="container-fluid mt-2">
+  
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0">Cronograma da Turma</h2>
+  </div>
+
+  <div class="card shadow-sm border-0 mb-4 bg-light">
+    <div class="card-body">
+      
+      <div class="row align-items-end">
+        <div class="col-md-4 mb-3 mb-md-0">
+          <label class="form-label fw-bold">Turma</label>
+          <select class="form-select" [(ngModel)]="turmaSelecionada">
+            <option value="">Selecione a turma...</option>
+            @for (turma of listaTurmas(); track turma.codigo) {
+              <option [value]="turma.codigo">{{ turma.nome || turma.codigo }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="col-md-4 mb-3 mb-md-0">
+          <label class="form-label fw-bold">Disciplina</label>
+          <select class="form-select" [(ngModel)]="disciplinaSelecionada">
+            <option value="">Selecione a disciplina...</option>
+            @for (disciplina of listaDisciplinas(); track disciplina.codigo) {
+              <option [value]="disciplina.codigo">{{ disciplina.nome }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="col-md-4">
+          <button class="btn btn-primary w-100" (click)="buscarCronograma()" [disabled]="!turmaSelecionada || !disciplinaSelecionada">
+            <i class="bi bi-search me-1"></i> Buscar Aulas
+          </button>
+        </div>
+      </div>
+
+      @if (buscou && listaAulas().length > 0) {
+        <hr class="my-3 text-muted" style="opacity: 0.15;">
+        
+        <div class="row align-items-end">
+          <div class="col-md-4 mb-3 mb-md-0">
+            <label class="form-label fw-bold text-muted small">Horário de Início</label>
+            <input type="time" class="form-control border-secondary" [(ngModel)]="horaInicioPadrao">
+          </div>
+          
+          <div class="col-md-4 mb-3 mb-md-0">
+            <label class="form-label fw-bold text-muted small">Horário de Fim</label>
+            <input type="time" class="form-control border-secondary" [(ngModel)]="horaFimPadrao">
+          </div>
+          
+          <div class="col-md-4">
+            <button class="btn btn-outline-success w-100 fw-bold" 
+                    (click)="sincronizarComCalendar()"
+                    [disabled]="!horaInicioPadrao || !horaFimPadrao">
+              <i class="bi bi-calendar-event me-1"></i> Adicionar ao Calendar
+            </button>
+          </div>
+        </div>
+      }
+
+    </div>
+  </div>
+
+  @if (buscou) {
+    <div class="d-flex justify-content-between align-items-center mb-2 mt-4">
+      <h5 class="fw-bold text-secondary mb-0">Aulas Programadas</h5>
+      
+      <button class="btn btn-warning fw-bold shadow-sm" 
+              (click)="abrirModalSubstituicao()" 
+              [disabled]="aulasSelecionadas.length === 0">
+        <i class="bi bi-arrow-left-right me-1"></i> Solicitar Substituição
+        @if (aulasSelecionadas.length > 0) {
+          <span class="badge bg-dark ms-1">{{ aulasSelecionadas.length }}</span>
+        }
+      </button>
+    </div>
+
+    <div class="card shadow-sm border-0">
+      <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th class="p-3 text-center" style="width: 50px;">
+                <input class="form-check-input cursor-pointer" type="checkbox" title="Selecionar Todas"
+                       [disabled]="listaAulas().length === 0"
+                       [checked]="todasSelecionadas()"
+                       (change)="toggleSelecionarTodas()">
+              </th>
+              <th class="p-3 text-center" style="width: 120px;">Data</th>
+              <th class="p-3">Título da Aula</th>
+              <th class="p-3">Professor</th>
+              <th class="p-3 text-center" style="width: 150px;">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (aula of listaAulas(); track aula.id) {
+              <tr [class.table-warning]="aulasSelecionadas.includes(aula.id)">
+                <td class="p-3 align-middle text-center">
+                  <input class="form-check-input border-secondary cursor-pointer" type="checkbox" 
+                         [checked]="aulasSelecionadas.includes(aula.id)"
+                         [disabled]="!aula.sincronizado"
+                         (change)="toggleSelecaoAula(aula.id)">
+                </td>
+                <td class="p-3 align-middle text-center fw-bold">{{ aula.data | date:'dd/MM/yyyy' }}</td>
+                <td class="p-3 align-middle">{{ aula.titulo }}</td>
+                <td class="p-3 align-middle">
+                  @if (aula.sincronizado) {
+                    <span class="badge bg-info text-dark"><i class="bi bi-person-fill me-1"></i> {{ aula.professor }}</span>
+                  } @else {
+                    <span class="badge bg-secondary"><i class="bi bi-hourglass-split me-1"></i> {{ aula.professor }}</span>
+                  }
+                </td>
+                
+                <td class="p-3 text-center">
+                  <button class="btn btn-outline-secondary btn-sm" title="Em breve: Agendamento individual" disabled>
+                    <i class="bi bi-lock-fill"></i> Em breve
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="p-4 text-center text-muted">
+                  Nenhum cronograma encontrado para esta combinação de Turma e Disciplina.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  @if (mostrarModal) {
+    <div class="modal fade show" tabindex="-1" style="display: block; background: rgba(0,0,0,0.6);">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+          
+          <div class="modal-header bg-warning border-0">
+            <h5 class="modal-title fw-bold text-dark">
+              <i class="bi bi-arrow-left-right me-2"></i>Solicitar Substituição
+            </h5>
+            <button type="button" class="btn-close" (click)="fecharModalSubstituicao()"></button>
+          </div>
+          
+          <div class="modal-body p-4">
+            <div class="alert alert-light border-secondary mb-4">
+              Você está solicitando a transferência de <strong>{{ aulasSelecionadas.length }}</strong> aula(s) do seu cronograma.
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-bold">Professor Substituto</label>
+              <select class="form-select border-secondary" [(ngModel)]="professorSubstitutoId">
+                <option value="">Selecione o colega...</option>
+                @for (prof of listaProfessores(); track prof.matricula) {
+                  <option [value]="prof.matricula">{{ prof.nome }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-bold">Motivo da Substituição</label>
+              <textarea class="form-control border-secondary" rows="3" [(ngModel)]="motivoSubstituicao" 
+                        placeholder="Ex: Viagem a trabalho, licença médica, semana de provas na faculdade..."></textarea>
+            </div>
+          </div>
+          
+          <div class="modal-footer border-0 bg-light">
+            <button type="button" class="btn btn-outline-secondary fw-bold" (click)="fecharModalSubstituicao()">Cancelar</button>
+            <button type="button" class="btn btn-warning fw-bold" 
+                    (click)="confirmarSubstituicao()" 
+                    [disabled]="!professorSubstitutoId || !motivoSubstituicao">
+              <i class="bi bi-check-circle me-1"></i> Enviar Solicitação
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  }
+
+</div>

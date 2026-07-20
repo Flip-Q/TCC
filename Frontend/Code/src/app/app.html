@@ -1,1 +1,59 @@
-<router-outlet></router-outlet>
+
+@if (mostrarLayout()) {
+    <div class="d-flex flex-column vh-100">
+        <header class="d-flex align-items-center justify-content-between px-4 py-3 bg-primary text-white shadow-sm">
+            <div class="d-flex align-items-center">
+            <button class="btn btn-primary border-0 me-3 fs-4 p-0 shadow-none" (click)="toggleMenu()" title="Alternar Menu">
+                <i class="bi bi-list text-white"></i>
+            </button>
+            
+            <h4 class="mb-0 fw-bold d-flex align-items-center">
+                <i class="bi bi-mortarboard-fill me-2"></i> Portal Prevest
+            </h4>
+            </div>
+            
+            <button class="btn btn-light fw-bold text-dark btn-sm px-3" (click)="logout()">
+            Sair <i class="bi bi-box-arrow-right ms-1"></i>
+            </button>
+        </header>
+
+        <div class="d-flex flex-grow-1 overflow-hidden">
+            
+            <nav class="bg-light border-end flex-shirnk-0" 
+                [style.width]="isMenuAberto() ? '250px' : '0px'"
+                [style.min-width]="isMenuAberto() ? '250px' : '0px'"
+                style="transition: width 0.3s ease; overflow-x: hidden; white-space: nowrap;">
+                
+            <div class="list-group list-group-flush mt-3">
+                
+                <a routerLink="/home" routerLinkActive="active bg-primary text-white" 
+                class="list-group-item list-group-item-action border-0 mb-1 px-4 py-3 fw-medium">
+                <i class="bi bi-house-door-fill me-2"></i> Início
+                </a>
+
+                <a routerLink="/agendamento" routerLinkActive="active bg-primary text-white" 
+                class="list-group-item list-group-item-action border-0 mb-1 px-4 py-3 fw-medium">
+                <i class="bi bi-calendar-check-fill me-2"></i> Agendamentos
+                </a>
+
+                <a routerLink="/cronograma" routerLinkActive="active bg-primary text-white" 
+                class="list-group-item list-group-item-action border-0 mb-1 px-4 py-3 fw-medium">
+                <i class="bi bi-journal-bookmark-fill me-2"></i> Cronogramas
+                </a>
+
+                <a routerLink="/substituicoes" routerLinkActive="active bg-primary text-white"
+                class="list-group-item list-group-item-action border-0 mb-1 px-4 py-3 fw-medium">
+                <i class="bi bi-arrow-left-right me-2"></i> Substituições
+                </a>
+
+            </div>
+            </nav>
+
+            <main class="flex-grow-1 p-4 bg-white overflow-auto" style="min-width: 0;">
+            <router-outlet></router-outlet>
+            </main>
+        </div>
+    </div>
+} @else {
+  <router-outlet></router-outlet>
+}

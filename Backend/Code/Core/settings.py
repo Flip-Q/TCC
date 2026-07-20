@@ -199,10 +199,14 @@ if AMBIENTE_NUVEM:
     
     URL_PRODUCAO_ANGULAR = 'https://tcc-delta-lime.vercel.app'
     
-    LOGIN_ERROR_URL = f'{URL_PRODUCAO_ANGULAR}/login'     #mudar pro link do vercel depois
-    LOGIN_REDIRECT_URL = f'{URL_PRODUCAO_ANGULAR}/home'   #mudar pro link do vercel depois
+    LOGIN_ERROR_URL = f'{URL_PRODUCAO_ANGULAR}/login'     
+    LOGIN_REDIRECT_URL = f'{URL_PRODUCAO_ANGULAR}/home'  
     
     CORS_ALLOWED_ORIGINS = [
+        URL_PRODUCAO_ANGULAR,
+    ]
+    
+    CSRF_TRUSTED_ORIGINS = [
         URL_PRODUCAO_ANGULAR,
     ]
 else:
@@ -219,6 +223,11 @@ else:
     CORS_ALLOWED_ORIGINS = [
         "http://localhost:4200",
         'http://127.0.0.1:4200',
+    ]
+    
+    CSRF_TRUSTED_ORIGINS = [
+        "http://localhost:4200",
+        "http://127.0.0.1:4200",
     ]
 
 

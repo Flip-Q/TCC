@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -15,13 +15,15 @@ declare var google: any;
   styleUrl: './agendamento.css'
 })
 
-export class Agendamento implements OnInit {
+export class Agendamento implements OnInit, OnDestroy {
   private router = inject(Router);
   private data = inject(Data);
 
   protected readonly tarefasAgendadas = signal<any[]>([]);
   protected readonly exibirModal = signal(false);
   protected readonly listaArquivos = signal<{ nome: string, url: string }[]>([]);
+  protected readonly listaTurmas = signal<any[]>([]);
+  protected readonly listaDisciplinas = signal<any[]>([]);
 
   protected assunto = '';
   protected dataPrevista = '';
@@ -31,7 +33,12 @@ export class Agendamento implements OnInit {
   private googleClientId = '';
   private googleApiKey = '';
 
+  protected agendamentoIdEmEdicao: number | null = null;
+  private intervaloAtualizacao: any;
+
   ngOnInit() {
+    this.buscarTurmas();
+    this.buscarDisciplinas();
     this.buscarTarefasAgendadas();
     this.carregarScriptGooglePicker();
 
@@ -43,6 +50,47 @@ export class Agendamento implements OnInit {
       },
       error: (err) => {
         console.error('Erro ao obter token do Google:', err);
+      }
+    });
+
+    this.intervaloAtualizacao = setInterval(() => {
+      this.verificarAtualizacoes();
+    }, 5000); // Verifica a cada 15 segundos
+  }
+
+  ngOnDestroy() {
+    if (this.intervaloAtualizacao) {
+      clearInterval(this.intervaloAtualizacao);
+    }
+  }
+
+  verificarAtualizacoes() {
+    this.data.getAgendamentos().subscribe({
+      next: (dados) => {
+        this.tarefasAgendadas.set(dados);
+      }
+    });
+  }
+
+
+  buscarTurmas() {
+    this.data.getTurmas().subscribe({
+      next: (dados) => {
+        this.listaTurmas.set(dados);
+      },
+      error: (err) => {
+        console.error('Erro ao obter turmas:', err);
+      }
+    });
+  }
+
+  buscarDisciplinas() {
+    this.data.getDisciplinas().subscribe({
+      next: (dados) => {
+        this.listaDisciplinas.set(dados);
+      },
+      error: (err) => {
+        console.error('Erro ao obter disciplinas:', err);
       }
     });
   }
@@ -70,6 +118,41 @@ export class Agendamento implements OnInit {
         }
       });
     }
+  }
+
+  excluirAgendamento(tarefaId: number) {
+    if (confirm('Tem certeza que deseja excluir este agendamento?')) {
+      this.data.excluirAgendamento(tarefaId).subscribe({
+        next: () => {
+          this.buscarTarefasAgendadas(); 
+        },
+        error: (err) => {
+          alert('Erro ao excluir o agendamento.');
+        }
+      });
+    }
+  }
+
+  abrirModalEdicao(tarefa: any) {
+    this.agendamentoIdEmEdicao = tarefa.id;
+    this.assunto = tarefa.assunto;
+
+    if (tarefa.data_prevista) {
+      const dataAjustada = new Date(tarefa.data_prevista);
+      dataAjustada.setMinutes(dataAjustada.getMinutes() - dataAjustada.getTimezoneOffset());
+      this.dataPrevista = dataAjustada.toISOString().slice(0, 16);
+    }
+
+    this.turmaCodigo = tarefa.turma_codigo || '';
+    this.codigoDisciplina = tarefa.disciplina_codigo || '';
+
+    if (tarefa.arquivos && tarefa.arquivos.length > 0) {
+      this.listaArquivos.set([...tarefa.arquivos]);
+    } else{
+      this.listaArquivos.set([]);
+    }
+
+    this.exibirModal.set(true);
   }
 
   private carregarScriptGooglePicker() {
@@ -118,14 +201,16 @@ export class Agendamento implements OnInit {
         .setOrigin(window.location.protocol + '//' + window.location.host)
         .setDeveloperKey(this.googleApiKey)
         .addView(view)
+        .enableFeature(google.picker.Feature.MULTISELECT_ENABLED)
         .setCallback((data: any) => {
           if (data.action === 'picked') {
-            const doc = data.docs[0];
-            const novoArquivo = {
+            //const doc = data.docs[0];
+            //const novoArquivo = {
+            const novosArquivos = data.docs.map((doc: any) => ({
               nome: doc.name,
               url: doc.url
-            };
-            this.listaArquivos.update(arquivos => [...arquivos, novoArquivo]);
+            }));
+            this.listaArquivos.update(arquivos => [...arquivos, ...novosArquivos]);
           }
         })
         .build();
@@ -141,6 +226,13 @@ export class Agendamento implements OnInit {
     this.listaArquivos.update(arquivos => arquivos.filter((_, i) => i !== index));
   }
 
+  private finalizarSalvamentoModal(msg: string) {
+    alert(msg);
+    this.exibirModal.set(false);
+    this.buscarTarefasAgendadas();
+    this.limparFormulario();
+  }
+
   salvarNovoAgendamento() {
     const payload = {
       turma_codigo: this.turmaCodigo,
@@ -149,7 +241,22 @@ export class Agendamento implements OnInit {
       data_prevista: this.dataPrevista,
       arquivos: this.listaArquivos()
     };
-
+  
+    if (this.agendamentoIdEmEdicao) { // Se estiver editando um agendamento existente
+      this.data.editarAgendamento(this.agendamentoIdEmEdicao, payload).subscribe({
+        next: () => this.finalizarSalvamentoModal('Agendamento editado com sucesso.'),
+        error: (err) => alert('Erro ao editar agendamento: ' + (err.error?.erro || 'Erro interno do servidor'))
+      });
+    }
+    else{ // Criar um novo agendamento
+      this.data.criarAgendamento(payload).subscribe({
+        next: () => this.finalizarSalvamentoModal('Agendamento criado com sucesso.'),
+        error: (err) => alert('Erro ao salvar agendmento' + (err.error?.erro || 'Erro interno do servidor'))
+      });
+    }
+  
+  
+    /**
     this.data.criarAgendamento(payload).subscribe({
       next: () => {
         alert('Agendamento criado com sucesso!');
@@ -161,11 +268,15 @@ export class Agendamento implements OnInit {
         alert('Erro ao salvar agendamento: ' + (err.error?.erro || 'Erro interno do servidor'));
       }
     });
+  */
   }
 
   private limparFormulario() {
+    this.agendamentoIdEmEdicao = null;
     this.assunto = '';
     this.dataPrevista = '';
+    this.turmaCodigo = '';
+    this.codigoDisciplina = '';
     this.listaArquivos.set([]);
   }
 
